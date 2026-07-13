@@ -165,6 +165,8 @@
           label: ts('Untitled'),
           required: false
         };
+        // Clone to prevent mutating shared metadata objects
+        defn = _.cloneDeep(defn);
         if (_.isEmpty(defn.input_attrs)) {
           defn.input_attrs = {};
         }
@@ -393,6 +395,25 @@
 
       $scope.toggleAttr = function(attr) {
         getSet(attr, !getSet(attr));
+      };
+
+      $scope.toggleRequired = () => {
+        if (ctrl.node['af-required']) {
+          delete ctrl.node['af-required'];
+          getSet('required', false);
+        } else {
+          getSet('required', !getSet('required'));
+        }
+      };
+
+      $scope.makeAlwaysRequired = () => {
+        delete ctrl.node['af-required'];
+        getSet('required', true);
+      };
+
+      $scope.deleteAttr = (name) => {
+        delete ctrl.node[name];
+
       };
 
       $scope.toggleHelp = function(position) {

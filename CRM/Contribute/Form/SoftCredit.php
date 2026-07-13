@@ -193,12 +193,8 @@ class CRM_Contribute_Form_SoftCredit {
     }
 
     if (!empty($fields['soft_credit_amount'])) {
-      $repeat = array_count_values($fields['soft_credit_contact_id']);
       foreach ($fields['soft_credit_amount'] as $key => $val) {
         if (!empty($fields['soft_credit_contact_id'][$key])) {
-          if ($repeat[$fields['soft_credit_contact_id'][$key]] > 1) {
-            $errors["soft_credit_contact_id[$key]"] = ts('You cannot enter multiple soft credits for the same contact.');
-          }
           // If this contribution uses a price set, $fields['total_amount'] is not set, so we don't try to validate.
           if (
             $fields['soft_credit_amount'][$key] && $fields['total_amount']

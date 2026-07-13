@@ -431,6 +431,7 @@ function afform_civicrm_pre($op, $entity, $id, &$params) {
       ->execute()->first();
     \Civi\Api4\Afform::revert(FALSE)
       ->addWhere('search_displays', 'CONTAINS', $display['saved_search_id.name'] . ".{$display['name']}")
+      ->addWhere('type', '=', 'search')
       ->execute();
   }
   // When deleting a savedSearch, delete any Afforms which use the default display
@@ -441,6 +442,7 @@ function afform_civicrm_pre($op, $entity, $id, &$params) {
       ->execute()->first();
     \Civi\Api4\Afform::revert(FALSE)
       ->addWhere('search_displays', 'CONTAINS', $search['name'])
+      ->addWhere('type', '=', 'search')
       ->execute();
   }
 }
@@ -456,7 +458,7 @@ function afform_civicrm_post($op, $entityName, $id, $object, $params) {
       // Adding a new custom field to an empty field group may auto-generate afforms with menu routes.
       // @see Civi\Api4\Action\CustomGroup\GetAfforms::getCustomGroupAfforms
       if ($op === 'create' && $entityName === 'CustomField') {
-        \CRM_Core_Menu::store();
+        \CRM_Core_Menu::clear();
       }
     }
   }

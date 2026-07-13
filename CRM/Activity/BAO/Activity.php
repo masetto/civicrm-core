@@ -1237,8 +1237,17 @@ WHERE entity_id =%1 AND entity_table = %2";
         $status = CRM_Event_PseudoConstant::participantStatus();
         $subject = $event[$entityObj->event_id];
 
-        if (!empty($roles[$entityObj->role_id])) {
-          $subject .= ' - ' . $roles[$entityObj->role_id];
+        if ($entityObj->role_id) {
+          $roleIds = CRM_Core_DAO::unSerializeField($entityObj->role_id, CRM_Core_DAO::SERIALIZE_SEPARATOR_TRIMMED);
+          $roleLabels = [];
+          foreach ($roleIds as $roleId) {
+            if (isset($roles[$roleId])) {
+              $roleLabels[] = $roles[$roleId];
+            }
+          }
+          if (!empty($roleLabels)) {
+            $subject .= ' - ' . implode(', ', $roleLabels);
+          }
         }
         if (!empty($status[$entityObj->status_id])) {
           $subject .= ' - ' . $status[$entityObj->status_id];
@@ -1355,22 +1364,17 @@ WHERE entity_id =%1 AND entity_table = %2";
   public static function getFileForActivityTypeId($activityTypeId, $crmDir = 'Activity') {
     $activityTypes = CRM_Case_PseudoConstant::caseActivityType(FALSE, TRUE);
 
-    if ($activityTypes[$activityTypeId]['name']) {
-      $activityTypeFile = CRM_Utils_String::munge(ucwords($activityTypes[$activityTypeId]['name']), '', 0);
-    }
-    else {
+    if (empty($activityTypes[$activityTypeId]['name'])) {
       return FALSE;
     }
 
-    global $civicrm_root;
-    $config = CRM_Core_Config::singleton();
-    if (!file_exists(rtrim($civicrm_root, '/') . "/CRM/{$crmDir}/Form/Activity/{$activityTypeFile}.php")) {
-      if (empty($config->customPHPPathDir)) {
-        return FALSE;
-      }
-      elseif (!file_exists(rtrim($config->customPHPPathDir, '/') . "/CRM/{$crmDir}/Form/Activity/{$activityTypeFile}.php")) {
-        return FALSE;
-      }
+    $activityTypeFile = CRM_Utils_String::munge(ucwords($activityTypes[$activityTypeId]['name']), '', 0);
+
+    // This helps with an old use-case where devs could place custom activity classes
+    // in the deprecated customPHPPathDir variable. Move the file into an extension and
+    // it will continue working as-is.
+    if (!class_exists("CRM_{$crmDir}_Form_Activity_{$activityTypeFile}")) {
+      return FALSE;
     }
 
     return $activityTypeFile;

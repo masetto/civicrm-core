@@ -222,6 +222,11 @@
         return editor.afform.type;
       };
 
+      this.getFormTypeLabel = () => {
+        const options = this.meta.afform_fields.type.options;
+        return options.find(option => option.id === editor.afform.type).label;
+      };
+
       $scope.updateLayoutHtml = function() {
         $scope.layoutHtml = '...Loading...';
         crmApi4('Afform', 'convert', {layout: editor.afform.layout, from: 'deep', to: 'html', formatWhitespace: true})
@@ -267,7 +272,7 @@
             fieldset['af-title'] = meta.label + ' ' + num;
             // Add boilerplate contents if any
             if (Array.isArray(meta.boilerplate) && meta.boilerplate.length) {
-              fieldset['#children'].push(...meta.boilerplate);
+              fieldset['#children'].push(..._.cloneDeep(meta.boilerplate));
             }
             // Attempt to place the new af-fieldset after the last one on the form
             pos = 1 + _.findLastIndex(editor.layout['#children'], 'af-fieldset');
